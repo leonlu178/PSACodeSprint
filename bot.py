@@ -137,6 +137,11 @@ def apply_leave_end_date(message):
 
 # Function to get contact information
 @bot.message_handler(commands=['contact_hr'])
+def contact_hr_command(message):
+    user_id = message.chat.id
+    send_contact_pdf(user_id)
+
+@bot.message_handler(commands=['contact_hr'])
 def send_contact_pdf(user_id):
     try:
         with open("PSAContacts.pdf", "rb") as pdf_file:
@@ -145,7 +150,11 @@ def send_contact_pdf(user_id):
         print(f"Error sending PDF: {e}")
         bot.send_message(user_id, "Unable to send the PDF at the moment.")
 
-
+@bot.message_handler(commands=['start_ai'])
+def start_ai_command(message):
+    user_id = message.chat.id
+    startAI(user_id)
+    
 @bot.message_handler(commands=['start_ai'])
 def startAI(user_id):
     #user_id = message.chat.id
