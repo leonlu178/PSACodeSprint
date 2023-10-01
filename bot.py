@@ -1,5 +1,6 @@
 import os
 import telebot
+import openai
 from telebot import types
 from dotenv import load_dotenv
 from datetime import datetime
@@ -8,8 +9,13 @@ load_dotenv()
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 bot = telebot.TeleBot(BOT_TOKEN)
+API_KEY = os.getenv('API_KEY')
+PROMPT = os.getenv('PROMPT')
 
-HR_INFO, APPLY_LEAVE, CHECK_PAYROLL, CONTACT_HR, TRACK_STATUS = range(5)
+openai.api_key = API_KEY  #public key changes from time to time DakuWorks #api-and-update
+openai.api_base = "https://api.daku.tech/v1"
+
+HR_INFO, APPLY_LEAVE, CHECK_PAYROLL, CONTACT_HR, TRACK_STATUS, CHAT_AI= range(6)
 
 user_data = {}
 
@@ -32,7 +38,8 @@ def create_menu_keyboard():
     item_hr_info = types.InlineKeyboardButton("HR Information", callback_data='hr_info')
     item_apply_leave = types.InlineKeyboardButton("Apply for Leave", callback_data='apply_leave')
     item_contact_hr = types.InlineKeyboardButton("Contact HR", callback_data='contact_hr')
-    markup.add(item_hr_info, item_apply_leave, item_contact_hr)
+    item_start_ai = types.InlineKeyboardButton("Start chatting with our AI", callback_data='startAI')
+    markup.add(item_hr_info, item_apply_leave, item_contact_hr, item_start_ai)
     return markup
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -44,6 +51,8 @@ def handle_menu_callback(call):
         bot.send_message(user_id, "You selected Apply for Leave. Use /apply_leave command to apply for leave.")
     elif call.data == 'contact_hr':
         send_contact_pdf(user_id)
+    elif call.data == 'startAI':
+        start_ai(user_id)
 
 @bot.message_handler(commands=['menu'])
 def display_menu(message):
@@ -135,5 +144,31 @@ def send_contact_pdf(user_id):
     except Exception as e:
         print(f"Error sending PDF: {e}")
         bot.send_message(user_id, "Unable to send the PDF at the moment.")
-    
+
+
+@bot.message_handler(commands=['startAI'])
+def start_ai(user_id):
+    #user_id = message.chat.id
+    user_data[user_id]["status"] = CHAT_AI
+    bot.send_message(user_id, "You have started a chat with our AI bot. Type something. Use /stopai to end the chat.")
+
+@bot.message_handler(commands=['stopai'])
+def stop_ai(message):
+    user_id = message.chat.id
+    user_data[user_id]["status"] = None
+    bot.reply_to(message, "You have ended the chat with our AI bot.")
+
+@bot.message_handler()
+def chat_ai(message):
+    user_id = message.chat.id
+    try:
+        if user_data[user_id]["status"] == CHAT_AI:
+            completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", 
+                                                    messages=[{"role": "user", "content": PROMPT + message.text}])
+            bot.reply_to(message, completion.choices[0].message.content)
+        else:
+            bot.reply_to(message, "You have entered an unknown command. Try using /start.")
+    except:
+        bot.reply_to(message, "You have entered an unknown command. Try using /start.")
+
 bot.infinity_polling()
