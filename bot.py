@@ -38,7 +38,7 @@ def create_menu_keyboard():
     item_hr_info = types.InlineKeyboardButton("HR Information", callback_data='hr_info')
     item_apply_leave = types.InlineKeyboardButton("Apply for Leave", callback_data='apply_leave')
     item_contact_hr = types.InlineKeyboardButton("Contact HR", callback_data='contact_hr')
-    item_start_ai = types.InlineKeyboardButton("Start chatting with our AI", callback_data='startAI')
+    item_start_ai = types.InlineKeyboardButton("Start chatting with our AI", callback_data='start_ai')
     markup.add(item_hr_info, item_apply_leave, item_contact_hr, item_start_ai)
     return markup
 
@@ -51,7 +51,7 @@ def handle_menu_callback(call):
         bot.send_message(user_id, "You selected Apply for Leave. Use /apply_leave command to apply for leave.")
     elif call.data == 'contact_hr':
         send_contact_pdf(user_id)
-    elif call.data == 'startAI':
+    elif call.data == 'start_ai':
         startAI(user_id)
 
 @bot.message_handler(commands=['menu'])
