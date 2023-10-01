@@ -162,10 +162,13 @@ def stop_ai(message):
 def chat_ai(message):
     user_id = message.chat.id
     try:
-        if user_data[user_id]["status"] == CHAT_AI:
-            completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", 
-                                                    messages=[{"role": "user", "content": PROMPT + message.text}])
-            bot.reply_to(message, completion.choices[0].message.content)
+        try:
+            if user_data[user_id]["status"] == CHAT_AI:
+                completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", 
+                                                        messages=[{"role": "user", "content": PROMPT + message.text}])
+                bot.reply_to(message, completion.choices[0].message.content)
+        except:
+            bot.send_message(user_id, "Our AI chat bot is not available at the moment. Please try again later.")
         else:
             bot.reply_to(message, "You have entered an unknown command. Try using /start.")
     except:
