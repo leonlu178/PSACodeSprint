@@ -73,7 +73,7 @@ def handle_hr_info_command(message):
     user_data[user_id]['state'] = HR_INFO
     bot.reply_to(message, "You are now in the HR Information menu. Type one of the following:\n\n"
                           "/passes_permits\n/guidelines\n/bus_guides\n/tender_notices\n/students\n/graduates\n/why_us\n/apply_now\n/contact_us")
-    
+
 # Function to handle user input
 @bot.message_handler(commands=['passes_permits', 'guidelines', 'bus_guides', 'tender_notices', 'students', 'graduates', 'why_us', 'apply_now', 'contact_us'])
 def handle_hr_info_request(message):
@@ -134,7 +134,7 @@ def apply_leave_end_date(message):
         user_data[user_id]['state'] = HR_INFO
     except ValueError:
         bot.reply_to(message, "Invalid date format. Please enter the date in YYYY-MM-DD format.")
-    
+
 # Function to get contact information
 @bot.message_handler(commands=['contact_hr'])
 def send_contact_pdf(user_id):
@@ -155,23 +155,25 @@ def start_ai(user_id):
 @bot.message_handler(commands=['stopai'])
 def stop_ai(message):
     user_id = message.chat.id
-    user_data[user_id]["status"] = None
+    user_data[user_id]["status"] = HR_INFO
     bot.reply_to(message, "You have ended the chat with our AI bot.")
 
 @bot.message_handler()
 def chat_ai(message):
     user_id = message.chat.id
-    try:
+    if user_data.get(user_id) == None:
+        bot.reply_to(message, "You have entered an unknown command. Try using /start.")
+
+
+    elif user_data[user_id]["status"] == CHAT_AI:
         try:
-            if user_data[user_id]["status"] == CHAT_AI:
-                completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", 
-                                                        messages=[{"role": "user", "content": PROMPT + message.text}])
-                bot.reply_to(message, completion.choices[0].message.content)
+                if user_data[user_id]["status"] == CHAT_AI:
+                    completion = openai.ChatCompletion.create(model="gpt-3.5-turbo",
+                                                            messages=[{"role": "user", "content": PROMPT + message.text}])
+                    bot.reply_to(message, completion.choices[0].message.content)
         except:
-            bot.send_message(user_id, "Our AI chat bot is not available at the moment. Please try again later.")
-        else:
-            bot.reply_to(message, "You have entered an unknown command. Try using /start.")
-    except:
+                bot.send_message(user_id, "Our AI chat bot is not available at the moment. Please try again later.")
+    else:
         bot.reply_to(message, "You have entered an unknown command. Try using /start.")
 
 bot.infinity_polling()
