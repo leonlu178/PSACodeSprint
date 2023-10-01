@@ -52,7 +52,7 @@ def handle_menu_callback(call):
     elif call.data == 'contact_hr':
         send_contact_pdf(user_id)
     elif call.data == 'startAI':
-        start_ai(user_id)
+        startAI(user_id)
 
 @bot.message_handler(commands=['menu'])
 def display_menu(message):
@@ -146,14 +146,14 @@ def send_contact_pdf(user_id):
         bot.send_message(user_id, "Unable to send the PDF at the moment.")
 
 
-@bot.message_handler(commands=['startAI'])
-def start_ai(user_id):
+@bot.message_handler(commands=['start_ai'])
+def startAI(user_id):
     #user_id = message.chat.id
-    user_data[user_id]["status"] = CHAT_AI
-    bot.send_message(user_id, "You have started a chat with our AI bot. Type something. Use /stopai to end the chat.")
+    user_data[user_id] ={"status" :CHAT_AI}
+    bot.send_message(user_id, "You have started a chat with our AI bot. Type something. Use /stop_ai to end the chat.")
 
-@bot.message_handler(commands=['stopai'])
-def stop_ai(message):
+@bot.message_handler(commands=['stop_ai'])
+def stopAI(message):
     user_id = message.chat.id
     user_data[user_id]["status"] = HR_INFO
     bot.reply_to(message, "You have ended the chat with our AI bot.")
@@ -164,7 +164,8 @@ def chat_ai(message):
     if user_data.get(user_id) == None:
         bot.reply_to(message, "You have entered an unknown command. Try using /start.")
 
-
+    elif user_data.get(user_id).get("status") == None:
+        bot.reply_to(message, "You have entered an unknown command. Try using /start.")
     elif user_data[user_id]["status"] == CHAT_AI:
         try:
                 if user_data[user_id]["status"] == CHAT_AI:
